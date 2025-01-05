@@ -1,3 +1,4 @@
+import { useState } from "react";
 
 function App() {
   const stories = [
@@ -19,19 +20,21 @@ function App() {
     },
   ];
 
+  console.log("App renders");
+
   return (
     <div>
       <h1>My Hacker Stories</h1>
       <Search/>
-
       <hr/>
-
       <List list={stories}/>
     </div>
   );
 }
 
 function List(props) {
+  console.log("List renders" +
+    "");
   return (
     <ul>
       { props.list.map((item) => {
@@ -42,6 +45,7 @@ function List(props) {
 }
 
 function Item({ item }) {
+  console.log("Item renders");
   return (
     <li>
               <span>
@@ -55,16 +59,19 @@ function Item({ item }) {
 }
 
 function Search() {
+  const [searchTerm, setSearchTerm] = useState("");
   const handleChange = (event) => {
-    console.log(event);
-    console.log(event.target.value);
+    setSearchTerm(event.target.value);
   };
+  console.log("Search renders");
+  
   return (
     <div>
       <label htmlFor="search">Search: </label>
       <input id="search"
              onChange={ handleChange }
              type="text"/>
+      <p>Searching for <strong>{searchTerm}</strong></p>
     </div>
   );
 }
