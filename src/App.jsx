@@ -20,12 +20,16 @@ function App() {
     },
   ];
 
+  const handleSearch = (event) => {
+    console.log(event.target.value);
+  };
+
   console.log("App renders");
 
   return (
     <div>
       <h1>My Hacker Stories</h1>
-      <Search/>
+      <Search onSearch={handleSearch}/>
       <hr/>
       <List list={stories}/>
     </div>
@@ -33,8 +37,7 @@ function App() {
 }
 
 function List(props) {
-  console.log("List renders" +
-    "");
+  console.log("List renders");
   return (
     <ul>
       { props.list.map((item) => {
@@ -58,10 +61,11 @@ function Item({ item }) {
   );
 }
 
-function Search() {
+function Search(props) {
   const [searchTerm, setSearchTerm] = useState("");
   const handleChange = (event) => {
     setSearchTerm(event.target.value);
+    props.onSearch(event);
   };
   console.log("Search renders");
   
