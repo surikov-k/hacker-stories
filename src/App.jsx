@@ -22,8 +22,8 @@ function App() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSearch = (value) => {
-    setSearchTerm(value);
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
   };
 
   console.log("App renders");
@@ -31,52 +31,52 @@ function App() {
   return (
     <div>
       <h1>My Hacker Stories</h1>
-      <Search onSearch={handleSearch} search={searchTerm}/>
+      <Search onSearch={ handleSearch }
+              search={ searchTerm }/>
       <hr/>
-      <List list={stories} searchTerm={searchTerm}/>
+      <List list={ stories }
+            searchTerm={ searchTerm }/>
     </div>
   );
 }
 
-function List(props) {
+function List({ list, searchTerm }) {
   console.log("List renders");
-  const filteredList = props.list.filter((item) => item.title.toLowerCase().includes(props.searchTerm.toLowerCase()));
+  const filteredList = list.filter((item) => item.title.toLowerCase().includes(searchTerm.toLowerCase()));
   return (
     <ul>
-      { filteredList.map((item) => {
-        return <Item key={item.objectID} item={item}/>;
+      { filteredList.map(({ objectID, ...item }) => {
+        return <Item key={ objectID }
+                     { ...item }/>;
       }) }
     </ul>
   );
 }
 
-function Item({ item }) {
+function Item({ url, title, author, num_comments, points }) {
   console.log("Item renders");
   return (
     <li>
               <span>
-                <a href={ item.url }>{ item.title }</a>
+                <a href={ url }>{ title }</a>
               </span>
-      <span>{ item.author }</span>
-      <span>{ item.num_comments }</span>
-      <span>{ item.points }</span>
+      <span>{ author }</span>
+      <span>{ num_comments }</span>
+      <span>{ points }</span>
     </li>
   );
 }
 
-function Search(props) {
+function Search({ search, onSearch }) {
 
-  const handleChange = (event) => {
-    props.onSearch(event.target.value);
-  };
   console.log("Search renders");
-  
+
   return (
     <div>
       <label htmlFor="search">Search: </label>
       <input id="search"
-             value={props.search}
-             onChange={ handleChange }
+             value={ search }
+             onChange={ onSearch }
              type="text"/>
     </div>
   );
