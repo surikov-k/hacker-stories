@@ -22,11 +22,19 @@ function App() {
   ];
 
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
+  const [favortie, setFavorite] = useState("");
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
   console.log("App renders");
+
+  const handleCatChange = () => {
+    setFavorite("cat");
+  };
+  const handleDogChange = () => {
+    setFavorite("dog");
+  };
 
   return (
     <div>
@@ -41,7 +49,24 @@ function App() {
       <Button onClick={ () => console.log("Clicked button One!") }>Click Button One!</Button>
       <Button type="submit"
               onClick={ () => console.log("Clicked button Two!") }>Click Button Two!</Button>
+      <RadioButton label="Cat"
+                   value={ favortie === "cat" }
+                   onChange={ handleCatChange }/>
+      <RadioButton label="Dog"
+                   value={ favortie === "dog" }
+                   onChange={ handleDogChange }/>
     </div>
+  );
+}
+
+function RadioButton({ label, value, onChange }) {
+  return (
+    <label>
+      <input type="radio"
+             checked={ value }
+             onChange={ onChange }/>
+      { label }
+    </label>
   );
 }
 
