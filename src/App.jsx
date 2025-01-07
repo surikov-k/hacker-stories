@@ -71,13 +71,13 @@ function Search({ search, onSearch }) {
   console.log("Search renders");
 
   return (
-    <div>
+    <>
       <label htmlFor="search">Search: </label>
       <input id="search"
              value={ search }
              onChange={ onSearch }
              type="text"/>
-    </div>
+    </>
   );
 }
 
