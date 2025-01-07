@@ -20,12 +20,7 @@ function App() {
     },
   ];
 
-  const [searchTerm, setSearchTerm] = useState(localStorage.getItem("search") || "");
-
-  useEffect(() => {
-    localStorage.setItem("search", searchTerm);
-  }, [searchTerm]);
-
+  const [searchTerm, setSearchTerm] = useStorageState("search", "");
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -84,6 +79,15 @@ function Search({ search, onSearch }) {
              type="text"/>
     </div>
   );
+}
+
+function useStorageState(key, initialState) {
+  const [value, setValue] = useState(localStorage.getItem(key) || initialState);
+  useEffect(() => {
+    localStorage.setItem(key, value);
+  }, [value, key]);
+
+  return [value, setValue];
 }
 
 export default App;
