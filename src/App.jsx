@@ -30,8 +30,10 @@ function App() {
   return (
     <div>
       <h1>My Hacker Stories</h1>
-      <Search onSearch={ handleSearch }
-              search={ searchTerm }/>
+      <InputWithLabel id="search"
+                      label="Search: "
+                      OnInputChange={ handleSearch }
+                      value={ searchTerm }/>
       <hr/>
       <List list={ stories }
             searchTerm={ searchTerm }/>
@@ -66,17 +68,21 @@ function Item({ url, title, author, num_comments, points }) {
   );
 }
 
-function Search({ search, onSearch }) {
+function InputWithLabel({
+                          id, label, type = "text",
+                          value, onInputChange
+                        }) {
 
-  console.log("Search renders");
+  console.log("InputWithLabel renders");
 
   return (
     <>
-      <label htmlFor="search">Search: </label>
-      <input id="search"
-             value={ search }
-             onChange={ onSearch }
-             type="text"/>
+      <label htmlFor={id}>{label}</label>
+      <input id={id}
+             value={ value }
+             onChange={ onInputChange }
+             type={type}
+      />
     </>
   );
 }
