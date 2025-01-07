@@ -23,8 +23,14 @@ function App() {
 
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
   const [favortie, setFavorite] = useState("");
+  const [checked, setChecked] = useState(false);
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleChecked = () => {
+    setChecked(!checked);
   };
 
   console.log("App renders");
@@ -55,7 +61,17 @@ function App() {
       <RadioButton label="Dog"
                    value={ favortie === "dog" }
                    onChange={ handleDogChange }/>
+      <Checkbox label="My Value" value={checked} onChange={handleChecked}/>
     </div>
+  );
+}
+
+function Checkbox({label, value, onChange}) {
+  return (
+    <label>
+      <input type="checkbox" checked={value} onChange={onChange}/>
+      {label}
+    </label>
   );
 }
 
