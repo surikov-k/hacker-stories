@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+
 function App() {
   const stories = [
     {
@@ -37,7 +38,19 @@ function App() {
       <hr/>
       <List list={ stories }
             searchTerm={ searchTerm }/>
+      <Button onClick={ () => console.log("Clicked button One!") }>Click Button One!</Button>
+      <Button type="submit"
+              onClick={ () => console.log("Clicked button Two!") }>Click Button Two!</Button>
     </div>
+  );
+}
+
+function Button({ type = "button", onClick, children, ...rest }) {
+  return (
+    <button type={ type }
+            onClick={ onClick }  { ...rest }>
+      { children }
+    </button>
   );
 }
 
@@ -77,11 +90,11 @@ function InputWithLabel({
 
   return (
     <>
-      <label htmlFor={id}>{label}</label>
-      <input id={id}
+      <label htmlFor={ id }>{ label }</label>
+      <input id={ id }
              value={ value }
              onChange={ onInputChange }
-             type={type}
+             type={ type }
       />
     </>
   );
