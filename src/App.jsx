@@ -1,5 +1,4 @@
-import { cloneElement, useEffect, useState } from "react";
-import "./assets/dropdown.css";
+import { useEffect, useState } from "react";
 
 
 function App() {
@@ -23,97 +22,30 @@ function App() {
   ];
 
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
-  const [favorite, setFavorite] = useState("");
-  const [checked, setChecked] = useState(false);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-  };
-
-  const handleChecked = () => {
-    setChecked(!checked);
-  };
-
-
-  console.log("App renders");
-
-  const handleCatChange = () => {
-    setFavorite("cat");
-  };
-  const handleDogChange = () => {
-    setFavorite("dog");
-  };
-
-
-  const handleMenuOne = () => {
-    console.log("Clicked One");
-  };
-
-  const handleMenuTwo = () => {
-    console.log("Clicked Two");
   };
 
   return (
     <div>
       <h1>My Hacker Stories</h1>
       <InputWithLabel id="search"
-                      label="Search: "
                       OnInputChange={ handleSearch }
-                      value={ searchTerm }/>
+                      value={ searchTerm }>
+        <strong>Search: </strong>
+      </InputWithLabel>
+
       <hr/>
       <List list={ stories }
             searchTerm={ searchTerm }/>
       <Button onClick={ () => console.log("Clicked button One!") }>Click Button One!</Button>
       <Button type="submit"
               onClick={ () => console.log("Clicked button Two!") }>Click Button Two!</Button>
-      <div>
-        <RadioButton label="Cat"
-                     value={ favorite === "cat" }
-                     onChange={ handleCatChange }/>
-        <RadioButton label="Dog"
-                     value={ favorite === "dog" }
-                     onChange={ handleDogChange }/>
-      </div>
-      <div>
-        <Checkbox label="My Value"
-                  value={ checked }
-                  onChange={ handleChecked }/>
-      </div>
-      <div>
-        <Dropdown trigger={ <button>Dropdown</button> }
-                  menu={ [
-                    <button key="1"
-                            onClick={ handleMenuOne }>Menu One</button>,
-                    <button key="2"
-                            onClick={ handleMenuTwo }>Menu Two</button>,
-                  ] }
-        />
-      </div>
     </div>
   );
 }
 
-function Checkbox({ label, value, onChange }) {
-  return (
-    <label>
-      <input type="checkbox"
-             checked={ value }
-             onChange={ onChange }/>
-      { label }
-    </label>
-  );
-}
-
-function RadioButton({ label, value, onChange }) {
-  return (
-    <label>
-      <input type="radio"
-             checked={ value }
-             onChange={ onChange }/>
-      { label }
-    </label>
-  );
-}
 
 function Button({ type = "button", onClick, children, ...rest }) {
   return (
@@ -152,15 +84,15 @@ function Item({ url, title, author, num_comments, points }) {
 }
 
 function InputWithLabel({
-                          id, label, type = "text",
-                          value, onInputChange
+                          id, type = "text",
+                          value, onInputChange, children
                         }) {
 
   console.log("InputWithLabel renders");
 
   return (
     <>
-      <label htmlFor={ id }>{ label }</label>
+      <label htmlFor={ id }>{ children }</label>
       <input id={ id }
              value={ value }
              onChange={ onInputChange }
@@ -179,36 +111,6 @@ function useStorageState(key, initialState) {
   return [value, setValue];
 }
 
-function Dropdown({ trigger, menu }) {
-  const [open, setOpen] = useState(false);
 
-  const handleOpen = () => {
-    setOpen(!open);
-  };
-
-  return (
-    <div className="dropdown">
-      { cloneElement(trigger, {
-        onClick: handleOpen,
-      }) }
-      { open ? (
-        <ul className="menu">
-          { menu.map((menuItem, index) => (
-            <li key={ index }
-                className="menu-item">
-              { cloneElement(menuItem, {
-                onClick: () => {
-                  menuItem.props.onClick();
-                  setOpen(false);
-                },
-              }) }
-            </li>
-          )) }
-        </ul>
-      ) : null }
-      { open ? <div>Is Open</div> : <div>Is Closed</div> }
-    </div>
-  );
-}
 
 export default App;
