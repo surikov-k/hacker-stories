@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { cloneElement, useEffect, useState } from "react";
+import "./assets/dropdown.css";
 
 
 function App() {
@@ -22,7 +23,7 @@ function App() {
   ];
 
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
-  const [favortie, setFavorite] = useState("");
+  const [favorite, setFavorite] = useState("");
   const [checked, setChecked] = useState(false);
 
   const handleSearch = (event) => {
@@ -33,6 +34,7 @@ function App() {
     setChecked(!checked);
   };
 
+
   console.log("App renders");
 
   const handleCatChange = () => {
@@ -40,6 +42,15 @@ function App() {
   };
   const handleDogChange = () => {
     setFavorite("dog");
+  };
+
+
+  const handleMenuOne = () => {
+    console.log("Clicked One");
+  };
+
+  const handleMenuTwo = () => {
+    console.log("Clicked Two");
   };
 
   return (
@@ -55,22 +66,40 @@ function App() {
       <Button onClick={ () => console.log("Clicked button One!") }>Click Button One!</Button>
       <Button type="submit"
               onClick={ () => console.log("Clicked button Two!") }>Click Button Two!</Button>
-      <RadioButton label="Cat"
-                   value={ favortie === "cat" }
-                   onChange={ handleCatChange }/>
-      <RadioButton label="Dog"
-                   value={ favortie === "dog" }
-                   onChange={ handleDogChange }/>
-      <Checkbox label="My Value" value={checked} onChange={handleChecked}/>
+      <div>
+        <RadioButton label="Cat"
+                     value={ favorite === "cat" }
+                     onChange={ handleCatChange }/>
+        <RadioButton label="Dog"
+                     value={ favorite === "dog" }
+                     onChange={ handleDogChange }/>
+      </div>
+      <div>
+        <Checkbox label="My Value"
+                  value={ checked }
+                  onChange={ handleChecked }/>
+      </div>
+      <div>
+        <Dropdown trigger={ <button>Dropdown</button> }
+                  menu={ [
+                    <button key="1"
+                            onClick={ handleMenuOne }>Menu One</button>,
+                    <button key="2"
+                            onClick={ handleMenuTwo }>Menu Two</button>,
+                  ] }
+        />
+      </div>
     </div>
   );
 }
 
-function Checkbox({label, value, onChange}) {
+function Checkbox({ label, value, onChange }) {
   return (
     <label>
-      <input type="checkbox" checked={value} onChange={onChange}/>
-      {label}
+      <input type="checkbox"
+             checked={ value }
+             onChange={ onChange }/>
+      { label }
     </label>
   );
 }
@@ -148,6 +177,38 @@ function useStorageState(key, initialState) {
   }, [value, key]);
 
   return [value, setValue];
+}
+
+function Dropdown({ trigger, menu }) {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => {
+    setOpen(!open);
+  };
+
+  return (
+    <div className="dropdown">
+      { cloneElement(trigger, {
+        onClick: handleOpen,
+      }) }
+      { open ? (
+        <ul className="menu">
+          { menu.map((menuItem, index) => (
+            <li key={ index }
+                className="menu-item">
+              { cloneElement(menuItem, {
+                onClick: () => {
+                  menuItem.props.onClick();
+                  setOpen(false);
+                },
+              }) }
+            </li>
+          )) }
+        </ul>
+      ) : null }
+      { open ? <div>Is Open</div> : <div>Is Closed</div> }
+    </div>
+  );
 }
 
 export default App;
