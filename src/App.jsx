@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 
 function App() {
@@ -32,7 +32,9 @@ function App() {
       <h1>My Hacker Stories</h1>
       <InputWithLabel id="search"
                       OnInputChange={ handleSearch }
-                      value={ searchTerm }>
+                      value={ searchTerm }
+                      isFocused
+      >
         <strong>Search: </strong>
       </InputWithLabel>
 
@@ -84,19 +86,33 @@ function Item({ url, title, author, num_comments, points }) {
 }
 
 function InputWithLabel({
-                          id, type = "text",
-                          value, onInputChange, children
+                          id,
+                          type = "text",
+                          value,
+                          onInputChange,
+                          children,
+                          isFocused
                         }) {
 
   console.log("InputWithLabel renders");
+
+  const inputRef = useRef();
+
+  useEffect(() => {
+    if (isFocused && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
 
   return (
     <>
       <label htmlFor={ id }>{ children }</label>
       <input id={ id }
+             ref={inputRef}
              value={ value }
              onChange={ onInputChange }
              type={ type }
+             // autoFocus={ isFocused }
       />
     </>
   );
@@ -110,7 +126,6 @@ function useStorageState(key, initialState) {
 
   return [value, setValue];
 }
-
 
 
 export default App;
