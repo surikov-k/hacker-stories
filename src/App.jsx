@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-
+import Slider from "./components/Slider.jsx";
 
 function App() {
   const stories = [
@@ -30,43 +30,53 @@ function App() {
   return (
     <div>
       <h1>My Hacker Stories</h1>
-      <InputWithLabel id="search"
-                      OnInputChange={ handleSearch }
-                      value={ searchTerm }
-                      isFocused
+      <InputWithLabel
+        id="search"
+        OnInputChange={handleSearch}
+        value={searchTerm}
+        isFocused
       >
         <strong>Search: </strong>
       </InputWithLabel>
 
-      <hr/>
-      <List list={ stories }
-            searchTerm={ searchTerm }/>
-      <Button onClick={ () => console.log("Clicked button One!") }>Click Button One!</Button>
-      <Button type="submit"
-              onClick={ () => console.log("Clicked button Two!") }>Click Button Two!</Button>
+      <hr />
+      <List list={stories} searchTerm={searchTerm} />
+      <Button onClick={() => console.log("Clicked button One!")}>
+        Click Button One!
+      </Button>
+      <Button type="submit" onClick={() => console.log("Clicked button Two!")}>
+        Click Button Two!
+      </Button>
+      <div style={{ padding: "32px 16px" }}>
+        <Slider
+          initial={10}
+          max={25}
+          formatFn={(number) => number.toFixed(2)}
+          onChange={(value) => console.log(value)}
+        />
+      </div>
     </div>
   );
 }
 
-
 function Button({ type = "button", onClick, children, ...rest }) {
   return (
-    <button type={ type }
-            onClick={ onClick }  { ...rest }>
-      { children }
+    <button type={type} onClick={onClick} {...rest}>
+      {children}
     </button>
   );
 }
 
 function List({ list, searchTerm }) {
   console.log("List renders");
-  const filteredList = list.filter((item) => item.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredList = list.filter((item) =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   return (
     <ul>
-      { filteredList.map(({ objectID, ...item }) => {
-        return <Item key={ objectID }
-                     { ...item }/>;
-      }) }
+      {filteredList.map(({ objectID, ...item }) => {
+        return <Item key={objectID} {...item} />;
+      })}
     </ul>
   );
 }
@@ -75,25 +85,24 @@ function Item({ url, title, author, num_comments, points }) {
   console.log("Item renders");
   return (
     <li>
-              <span>
-                <a href={ url }>{ title }</a>
-              </span>
-      <span>{ author }</span>
-      <span>{ num_comments }</span>
-      <span>{ points }</span>
+      <span>
+        <a href={url}>{title}</a>
+      </span>
+      <span>{author}</span>
+      <span>{num_comments}</span>
+      <span>{points}</span>
     </li>
   );
 }
 
 function InputWithLabel({
-                          id,
-                          type = "text",
-                          value,
-                          onInputChange,
-                          children,
-                          isFocused
-                        }) {
-
+  id,
+  type = "text",
+  value,
+  onInputChange,
+  children,
+  isFocused,
+}) {
   console.log("InputWithLabel renders");
 
   const inputRef = useRef();
@@ -106,13 +115,14 @@ function InputWithLabel({
 
   return (
     <>
-      <label htmlFor={ id }>{ children }</label>
-      <input id={ id }
-             ref={inputRef}
-             value={ value }
-             onChange={ onInputChange }
-             type={ type }
-             // autoFocus={ isFocused }
+      <label htmlFor={id}>{children}</label>
+      <input
+        id={id}
+        ref={inputRef}
+        value={value}
+        onChange={onInputChange}
+        type={type}
+        // autoFocus={ isFocused }
       />
     </>
   );
@@ -126,6 +136,5 @@ function useStorageState(key, initialState) {
 
   return [value, setValue];
 }
-
 
 export default App;
