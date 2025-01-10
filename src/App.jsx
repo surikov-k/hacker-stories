@@ -1,27 +1,31 @@
 import { useEffect, useRef, useState } from "react";
-import Slider from "./components/Slider.jsx";
 
+const initialStories = [
+  {
+    title: "React",
+    url: "https://reactjs.org/",
+    author: "Jordan Walke",
+    num_comments: 3,
+    points: 4,
+    objectID: 0,
+  },
+  {
+    title: "Redux",
+    url: "https://redux.js.org/",
+    author: "Dan Abramov, Andrew Clark",
+    num_comments: 2,
+    points: 5,
+    objectID: 1,
+  },
+];
 function App() {
-  const stories = [
-    {
-      title: "React",
-      url: "https://reactjs.org/",
-      author: "Jordan Walke",
-      num_comments: 3,
-      points: 4,
-      objectID: 0,
-    },
-    {
-      title: "Redux",
-      url: "https://redux.js.org/",
-      author: "Dan Abramov, Andrew Clark",
-      num_comments: 2,
-      points: 5,
-      objectID: 1,
-    },
-  ];
-
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
+  const [stories, setStories] = useState(initialStories);
+
+  const handleRemoveStory = (id) => {
+    const newStories = stories.filter((story) => id !== story.objectID);
+    setStories(newStories);
+  };
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -40,21 +44,17 @@ function App() {
       </InputWithLabel>
 
       <hr />
-      <List list={stories} searchTerm={searchTerm} />
+      <List
+        list={stories}
+        searchTerm={searchTerm}
+        onRemoveItem={handleRemoveStory}
+      />
       <Button onClick={() => console.log("Clicked button One!")}>
         Click Button One!
       </Button>
       <Button type="submit" onClick={() => console.log("Clicked button Two!")}>
         Click Button Two!
       </Button>
-      <div style={{ padding: "32px 16px" }}>
-        <Slider
-          initial={10}
-          max={25}
-          formatFn={(number) => number.toFixed(2)}
-          onChange={(value) => console.log(value)}
-        />
-      </div>
     </div>
   );
 }
@@ -67,22 +67,30 @@ function Button({ type = "button", onClick, children, ...rest }) {
   );
 }
 
-function List({ list, searchTerm }) {
-  console.log("List renders");
+function List({ list, searchTerm, onRemoveItem }) {
   const filteredList = list.filter((item) =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
   return (
     <ul>
-      {filteredList.map(({ objectID, ...item }) => {
-        return <Item key={objectID} {...item} />;
+      {filteredList.map((item) => {
+        return (
+          <Item key={item.objectID} onRemoveItem={onRemoveItem} {...item} />
+        );
       })}
     </ul>
   );
 }
 
-function Item({ url, title, author, num_comments, points }) {
-  console.log("Item renders");
+function Item({
+  objectID,
+  url,
+  title,
+  author,
+  num_comments,
+  points,
+  onRemoveItem,
+}) {
   return (
     <li>
       <span>
@@ -91,6 +99,9 @@ function Item({ url, title, author, num_comments, points }) {
       <span>{author}</span>
       <span>{num_comments}</span>
       <span>{points}</span>
+      <button type="button" onClick={onRemoveItem.bind(null, objectID)}>
+        Dismiss
+      </button>
     </li>
   );
 }
