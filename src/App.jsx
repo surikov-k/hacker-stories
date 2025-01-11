@@ -1,7 +1,9 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 
-const SET_STORIES = "SET_STORIES";
-const REMOVE_STORIES = "REMOVE_STORIES";
+const STORIES_FETCH_INIT = "STORIES_FETCH_INIT";
+const STORIES_FETCH_SUCCESS = "STORIES_FETCH_SUCCESS";
+const STORIES_FETCH_FAILURE = "STORIES_FETCH_FAILURE";
+const REMOVE_STORY = "REMOVE_STORY";
 
 const initialStories = [
   {
@@ -23,7 +25,7 @@ const initialStories = [
 ];
 
 function getStories() {
-  if (Math.random() > 0.5) {
+  if (Math.random() > 1) {
     return Promise.reject();
   }
   return new Promise((resolve) => {
@@ -33,10 +35,30 @@ function getStories() {
 
 const storiesReducer = (state, action) => {
   switch (action.type) {
-    case SET_STORIES:
-      return action.payload;
-    case REMOVE_STORIES:
-      return state.filter((story) => action.payload !== story.objectID);
+    case STORIES_FETCH_INIT:
+      return {
+        ...state,
+        isLoading: true,
+        isError: false,
+      };
+    case STORIES_FETCH_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        data: action.payload,
+      };
+    case STORIES_FETCH_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        isError: true,
+      };
+    case REMOVE_STORY:
+      return {
+        ...state,
+        data: state.data.filter((story) => action.payload !== story.objectID),
+      };
     default:
       throw new Error();
   }
@@ -44,27 +66,31 @@ const storiesReducer = (state, action) => {
 
 function App() {
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
-  // const [stories, setStories] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [stories, dispatchStories] = useReducer(storiesReducer, []);
+
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [isError, setIsError] = useState(false);
+  const [stories, dispatchStories] = useReducer(storiesReducer, {
+    data: [],
+    isLoading: false,
+    isError: false,
+  });
 
   useEffect(() => {
-    setIsLoading(true);
+    dispatchStories({ type: STORIES_FETCH_INIT });
+
     getStories()
       .then((result) => {
         dispatchStories({
-          type: "SET_STORIES",
+          type: STORIES_FETCH_SUCCESS,
           payload: result.data.stories,
         });
-        setIsLoading(false);
       })
-      .catch(() => setIsError(true));
+      .catch(() => dispatchStories({ type: STORIES_FETCH_FAILURE }));
   }, []);
 
   const handleRemoveStory = (id) => {
     dispatchStories({
-      type: "SET_STORIES",
+      type: REMOVE_STORY,
       payload: id,
     });
   };
@@ -73,12 +99,16 @@ function App() {
     setSearchTerm(event.target.value);
   };
 
+  const searchedStories = stories.data.filter((story) =>
+    story.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       <h1>My Hacker Stories</h1>
       <InputWithLabel
         id="search"
-        OnInputChange={handleSearch}
+        onInputChange={handleSearch}
         value={searchTerm}
         isFocused
       >
@@ -86,13 +116,13 @@ function App() {
       </InputWithLabel>
 
       <hr />
-      {isError && <p>Something went wrong</p>}
+      {stories.isError && <p>Something went wrong</p>}
 
-      {isLoading ? (
+      {stories.isLoading ? (
         <div>Loading...</div>
       ) : (
         <List
-          list={stories}
+          list={searchedStories}
           searchTerm={searchTerm}
           onRemoveItem={handleRemoveStory}
         />
@@ -123,22 +153,15 @@ function List({ list, searchTerm, onRemoveItem }) {
     <ul>
       {filteredList.map((item) => {
         return (
-          <Item key={item.objectID} onRemoveItem={onRemoveItem} {...item} />
+          <Item key={item.objectID} onRemoveItem={onRemoveItem} item={item} />
         );
       })}
     </ul>
   );
 }
 
-function Item({
-  objectID,
-  url,
-  title,
-  author,
-  num_comments,
-  points,
-  onRemoveItem,
-}) {
+function Item({ objectID, item, onRemoveItem }) {
+  const { url, title, author, num_comments, points } = item;
   return (
     <li>
       <span>
@@ -162,8 +185,6 @@ function InputWithLabel({
   children,
   isFocused,
 }) {
-  console.log("InputWithLabel renders");
-
   const inputRef = useRef();
 
   useEffect(() => {
@@ -181,7 +202,6 @@ function InputWithLabel({
         value={value}
         onChange={onInputChange}
         type={type}
-        // autoFocus={ isFocused }
       />
     </>
   );
