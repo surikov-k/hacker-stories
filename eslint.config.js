@@ -5,7 +5,6 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import eslintConfigPrettier from "eslint-config-prettier";
 
-
 export default [
   eslintConfigPrettier,
   { ignores: ["dist"] },
@@ -33,15 +32,15 @@ export default [
       ...reactHooks.configs.recommended.rules,
       "prefer-arrow-callback": ["error"],
       "prefer-template": ["error"],
-      "semi": ["error"],
-      "quotes": ["error", "double"],
+      semi: ["error"],
+      quotes: ["error", "double"],
       "react/jsx-no-target-blank": "off",
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
       ],
-      "react/prop-types": "off"
+      "react/prop-types": "off",
+      "no-unused-vars": "warn",
     },
   },
 ];
- 

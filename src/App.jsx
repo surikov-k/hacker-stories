@@ -1,4 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
+
+const SET_STORIES = "SET_STORIES";
+const REMOVE_STORIES = "REMOVE_STORIES";
 
 const initialStories = [
   {
@@ -20,22 +23,50 @@ const initialStories = [
 ];
 
 function getStories() {
+  if (Math.random() > 0.5) {
+    return Promise.reject();
+  }
   return new Promise((resolve) => {
     setTimeout(() => resolve({ data: { stories: initialStories } }), 2000);
   });
 }
 
+const storiesReducer = (state, action) => {
+  switch (action.type) {
+    case SET_STORIES:
+      return action.payload;
+    case REMOVE_STORIES:
+      return state.filter((story) => action.payload !== story.objectID);
+    default:
+      throw new Error();
+  }
+};
+
 function App() {
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
-  const [stories, setStories] = useState([]);
+  // const [stories, setStories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [stories, dispatchStories] = useReducer(storiesReducer, []);
 
   useEffect(() => {
-    getStories().then((result) => setStories(result.data.stories));
+    setIsLoading(true);
+    getStories()
+      .then((result) => {
+        dispatchStories({
+          type: "SET_STORIES",
+          payload: result.data.stories,
+        });
+        setIsLoading(false);
+      })
+      .catch(() => setIsError(true));
   }, []);
 
   const handleRemoveStory = (id) => {
-    const newStories = stories.filter((story) => id !== story.objectID);
-    setStories(newStories);
+    dispatchStories({
+      type: "SET_STORIES",
+      payload: id,
+    });
   };
 
   const handleSearch = (event) => {
@@ -55,11 +86,17 @@ function App() {
       </InputWithLabel>
 
       <hr />
-      <List
-        list={stories}
-        searchTerm={searchTerm}
-        onRemoveItem={handleRemoveStory}
-      />
+      {isError && <p>Something went wrong</p>}
+
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <List
+          list={stories}
+          searchTerm={searchTerm}
+          onRemoveItem={handleRemoveStory}
+        />
+      )}
       <Button onClick={() => console.log("Clicked button One!")}>
         Click Button One!
       </Button>
