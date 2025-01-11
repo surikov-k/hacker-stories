@@ -18,9 +18,20 @@ const initialStories = [
     objectID: 1,
   },
 ];
+
+function getStories() {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve({ data: { stories: initialStories } }), 2000);
+  });
+}
+
 function App() {
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
-  const [stories, setStories] = useState(initialStories);
+  const [stories, setStories] = useState([]);
+
+  useEffect(() => {
+    getStories().then((result) => setStories(result.data.stories));
+  }, []);
 
   const handleRemoveStory = (id) => {
     const newStories = stories.filter((story) => id !== story.objectID);
