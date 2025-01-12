@@ -1,5 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 
+const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
+
 const STORIES_FETCH_INIT = "STORIES_FETCH_INIT";
 const STORIES_FETCH_SUCCESS = "STORIES_FETCH_SUCCESS";
 const STORIES_FETCH_FAILURE = "STORIES_FETCH_FAILURE";
@@ -23,15 +25,6 @@ const initialStories = [
     objectID: 1,
   },
 ];
-
-function getStories() {
-  if (Math.random() > 1) {
-    return Promise.reject();
-  }
-  return new Promise((resolve) => {
-    setTimeout(() => resolve({ data: { stories: initialStories } }), 2000);
-  });
-}
 
 const storiesReducer = (state, action) => {
   switch (action.type) {
@@ -66,9 +59,6 @@ const storiesReducer = (state, action) => {
 
 function App() {
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
-
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [isError, setIsError] = useState(false);
   const [stories, dispatchStories] = useReducer(storiesReducer, {
     data: [],
     isLoading: false,
@@ -78,11 +68,12 @@ function App() {
   useEffect(() => {
     dispatchStories({ type: STORIES_FETCH_INIT });
 
-    getStories()
+    fetch(`${API_ENDPOINT}react`)
+      .then((response) => response.json())
       .then((result) => {
         dispatchStories({
           type: STORIES_FETCH_SUCCESS,
-          payload: result.data.stories,
+          payload: result.hits,
         });
       })
       .catch(() => dispatchStories({ type: STORIES_FETCH_FAILURE }));
