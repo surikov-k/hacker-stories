@@ -7,25 +7,6 @@ const STORIES_FETCH_SUCCESS = "STORIES_FETCH_SUCCESS";
 const STORIES_FETCH_FAILURE = "STORIES_FETCH_FAILURE";
 const REMOVE_STORY = "REMOVE_STORY";
 
-const initialStories = [
-  {
-    title: "React",
-    url: "https://reactjs.org/",
-    author: "Jordan Walke",
-    num_comments: 3,
-    points: 4,
-    objectID: 0,
-  },
-  {
-    title: "Redux",
-    url: "https://redux.js.org/",
-    author: "Dan Abramov, Andrew Clark",
-    num_comments: 2,
-    points: 5,
-    objectID: 1,
-  },
-];
-
 const storiesReducer = (state, action) => {
   switch (action.type) {
     case STORIES_FETCH_INIT:
@@ -66,9 +47,13 @@ function App() {
   });
 
   useEffect(() => {
+    if (!searchTerm) {
+      return;
+    }
+
     dispatchStories({ type: STORIES_FETCH_INIT });
 
-    fetch(`${API_ENDPOINT}react`)
+    fetch(`${API_ENDPOINT}${searchTerm}`)
       .then((response) => response.json())
       .then((result) => {
         dispatchStories({
@@ -77,7 +62,7 @@ function App() {
         });
       })
       .catch(() => dispatchStories({ type: STORIES_FETCH_FAILURE }));
-  }, []);
+  }, [searchTerm]);
 
   const handleRemoveStory = (id) => {
     dispatchStories({
@@ -89,10 +74,6 @@ function App() {
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
-
-  const searchedStories = stories.data.filter((story) =>
-    story.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div>
@@ -112,11 +93,7 @@ function App() {
       {stories.isLoading ? (
         <div>Loading...</div>
       ) : (
-        <List
-          list={searchedStories}
-          searchTerm={searchTerm}
-          onRemoveItem={handleRemoveStory}
-        />
+        <List list={stories.data} onRemoveItem={handleRemoveStory} />
       )}
       <Button onClick={() => console.log("Clicked button One!")}>
         Click Button One!
@@ -136,13 +113,10 @@ function Button({ type = "button", onClick, children, ...rest }) {
   );
 }
 
-function List({ list, searchTerm, onRemoveItem }) {
-  const filteredList = list.filter((item) =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+function List({ list, onRemoveItem }) {
   return (
     <ul>
-      {filteredList.map((item) => {
+      {list.map((item) => {
         return (
           <Item key={item.objectID} onRemoveItem={onRemoveItem} item={item} />
         );
@@ -158,9 +132,9 @@ function Item({ objectID, item, onRemoveItem }) {
       <span>
         <a href={url}>{title}</a>
       </span>
-      <span>{author}</span>
-      <span>{num_comments}</span>
-      <span>{points}</span>
+      <span> {author}</span>
+      <span> {num_comments}</span>
+      <span> {points}</span>
       <button type="button" onClick={onRemoveItem.bind(null, objectID)}>
         Dismiss
       </button>
