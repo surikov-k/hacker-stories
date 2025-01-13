@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import "./App.css";
 
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
@@ -39,26 +40,8 @@ const storiesReducer = (state, action) => {
   }
 };
 
-function SearchForm(searchTerm, onSearchInput, onSearchSubmit) {
-  return (
-    <form onSubmit={onSearchSubmit}>
-      <InputWithLabel
-        id="search"
-        onInputChange={onSearchInput}
-        value={searchTerm}
-        isFocused
-      >
-        <strong>Search: </strong>
-      </InputWithLabel>
-      <button type="submit" disabled={!searchTerm}>
-        Submit
-      </button>
-    </form>
-  );
-}
-
 function App() {
-  const [searchTerm, setSearchTerm] = useStorageState("search", "");
+  const [searchTerm, setSearchTerm] = useStorageState("search", "React");
   const [url, setUrl] = useState(`${API_ENDPOINT}${searchTerm}`);
   const [stories, dispatchStories] = useReducer(storiesReducer, {
     data: [],
@@ -69,9 +52,9 @@ function App() {
   const handleFetchStories = useCallback(async () => {
     dispatchStories({ type: STORIES_FETCH_INIT });
 
-    const result = await axios.get(url);
-
     try {
+      const result = await axios.get(url);
+
       dispatchStories({
         type: STORIES_FETCH_SUCCESS,
         payload: result.data.hits,
@@ -102,16 +85,14 @@ function App() {
   };
 
   return (
-    <div>
-      <h1>My Hacker Stories</h1>
+    <div className="container">
+      <h1 className="headline-primary">My Hacker Stories</h1>
 
       <SearchForm
         searchTerm={searchTerm}
         onSearchInput={handleSearchInput}
         onSearchSubmit={handleSearchSubmit}
       />
-
-      <hr />
 
       {stories.isError && <p>Something went wrong</p>}
 
@@ -153,16 +134,22 @@ function List({ list, onRemoveItem }) {
 function Item({ objectID, item, onRemoveItem }) {
   const { url, title, author, num_comments, points } = item;
   return (
-    <li>
-      <span>
+    <li className="item">
+      <span style={{ width: "40%" }}>
         <a href={url}>{title}</a>
       </span>
-      <span> {author}</span>
-      <span> {num_comments}</span>
-      <span> {points}</span>
-      <button type="button" onClick={onRemoveItem.bind(null, objectID)}>
-        Dismiss
-      </button>
+      <span style={{ width: "30%" }}> {author}</span>
+      <span style={{ width: "10%" }}> {num_comments}</span>
+      <span style={{ width: "10%" }}> {points}</span>
+      <span style={{ width: "10%" }}>
+        <button
+          className="button button_small"
+          type="button"
+          onClick={onRemoveItem.bind(null, objectID)}
+        >
+          Dismiss
+        </button>
+      </span>
     </li>
   );
 }
@@ -185,8 +172,11 @@ function InputWithLabel({
 
   return (
     <>
-      <label htmlFor={id}>{children}</label>
+      <label className="label" htmlFor={id}>
+        {children}
+      </label>
       <input
+        className="input"
         id={id}
         ref={inputRef}
         value={value}
@@ -204,6 +194,29 @@ function useStorageState(key, initialState) {
   }, [value, key]);
 
   return [value, setValue];
+}
+
+function SearchForm({ searchTerm, onSearchInput, onSearchSubmit }) {
+  console.log(searchTerm);
+  return (
+    <form onSubmit={onSearchSubmit} className="search-form">
+      <InputWithLabel
+        id="search"
+        onInputChange={onSearchInput}
+        value={searchTerm}
+        isFocused
+      >
+        <strong>Search: </strong>
+      </InputWithLabel>
+      <button
+        className="button button_large"
+        type="submit"
+        disabled={!searchTerm}
+      >
+        Submit
+      </button>
+    </form>
+  );
 }
 
 export default App;
