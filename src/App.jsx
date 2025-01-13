@@ -1,6 +1,7 @@
 import axios from "axios";
+import clsx from "clsx";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import "./App.css";
+import styles from "./App.module.css";
 
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
@@ -85,8 +86,8 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <h1 className="headline-primary">My Hacker Stories</h1>
+    <div className={styles.container}>
+      <h1 className={styles["headline-primary"]}>My Hacker Stories</h1>
 
       <SearchForm
         searchTerm={searchTerm}
@@ -134,7 +135,7 @@ function List({ list, onRemoveItem }) {
 function Item({ objectID, item, onRemoveItem }) {
   const { url, title, author, num_comments, points } = item;
   return (
-    <li className="item">
+    <li className={styles.item}>
       <span style={{ width: "40%" }}>
         <a href={url}>{title}</a>
       </span>
@@ -143,7 +144,7 @@ function Item({ objectID, item, onRemoveItem }) {
       <span style={{ width: "10%" }}> {points}</span>
       <span style={{ width: "10%" }}>
         <button
-          className="button button_small"
+          className={`${styles.button} ${styles.button_small}`}
           type="button"
           onClick={onRemoveItem.bind(null, objectID)}
         >
@@ -172,11 +173,11 @@ function InputWithLabel({
 
   return (
     <>
-      <label className="label" htmlFor={id}>
+      <label className={styles.label} htmlFor={id}>
         {children}
       </label>
       <input
-        className="input"
+        className={styles.input}
         id={id}
         ref={inputRef}
         value={value}
@@ -197,9 +198,8 @@ function useStorageState(key, initialState) {
 }
 
 function SearchForm({ searchTerm, onSearchInput, onSearchSubmit }) {
-  console.log(searchTerm);
   return (
-    <form onSubmit={onSearchSubmit} className="search-form">
+    <form onSubmit={onSearchSubmit} className={styles["search-form"]}>
       <InputWithLabel
         id="search"
         onInputChange={onSearchInput}
@@ -209,7 +209,7 @@ function SearchForm({ searchTerm, onSearchInput, onSearchSubmit }) {
         <strong>Search: </strong>
       </InputWithLabel>
       <button
-        className="button button_large"
+        className={clsx(styles.button, styles.button_large)}
         type="submit"
         disabled={!searchTerm}
       >
