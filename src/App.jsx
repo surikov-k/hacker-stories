@@ -39,6 +39,24 @@ const storiesReducer = (state, action) => {
   }
 };
 
+function SearchForm(searchTerm, onSearchInput, onSearchSubmit) {
+  return (
+    <form onSubmit={onSearchSubmit}>
+      <InputWithLabel
+        id="search"
+        onInputChange={onSearchInput}
+        value={searchTerm}
+        isFocused
+      >
+        <strong>Search: </strong>
+      </InputWithLabel>
+      <button type="submit" disabled={!searchTerm}>
+        Submit
+      </button>
+    </form>
+  );
+}
+
 function App() {
   const [searchTerm, setSearchTerm] = useStorageState("search", "");
   const [url, setUrl] = useState(`${API_ENDPOINT}${searchTerm}`);
@@ -74,7 +92,8 @@ function App() {
     });
   };
 
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
     setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
 
@@ -85,19 +104,15 @@ function App() {
   return (
     <div>
       <h1>My Hacker Stories</h1>
-      <InputWithLabel
-        id="search"
-        onInputChange={handleSearchInput}
-        value={searchTerm}
-        isFocused
-      >
-        <strong>Search: </strong>
-      </InputWithLabel>
-      <button type="button" disabled={!searchTerm} onClick={handleSearchSubmit}>
-        Submit
-      </button>
+
+      <SearchForm
+        searchTerm={searchTerm}
+        onSearchInput={handleSearchInput}
+        onSearchSubmit={handleSearchSubmit}
+      />
 
       <hr />
+
       {stories.isError && <p>Something went wrong</p>}
 
       {stories.isLoading ? (
