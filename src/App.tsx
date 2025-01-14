@@ -1,7 +1,11 @@
 import axios from "axios";
 import clsx from "clsx";
 import {
+  ButtonHTMLAttributes,
+  FC,
   memo,
+  ReactElement,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -9,8 +13,50 @@ import {
   useRef,
   useState,
 } from "react";
+
 import styles from "./App.module.css";
 import Check from "./assets/check.svg?react";
+
+type Story = {
+  objectID: string;
+  url: string;
+  title: string;
+  author: string;
+  num_comments: number;
+  points: number;
+};
+
+type Stories = Story[];
+
+type StoriesState = {
+  data: Stories;
+  isLoading: boolean;
+  isError: boolean;
+};
+
+type StoriesFetchInitAction = {
+  type: "STORIES_FETCH_INIT";
+};
+
+type StoriesFetchSuccessAction = {
+  type: "STORIES_FETCH_SUCCESS";
+  payload: Stories;
+};
+
+type StoriesFetchFailureAction = {
+  type: "STORIES_FETCH_FAILURE";
+};
+
+type StoriesRemoveAction = {
+  type: "REMOVE_STORY";
+  payload: Story;
+};
+
+type StoriesAction =
+  | StoriesFetchInitAction
+  | StoriesFetchSuccessAction
+  | StoriesFetchFailureAction
+  | StoriesRemoveAction;
 
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
@@ -19,7 +65,7 @@ const STORIES_FETCH_SUCCESS = "STORIES_FETCH_SUCCESS";
 const STORIES_FETCH_FAILURE = "STORIES_FETCH_FAILURE";
 const REMOVE_STORY = "REMOVE_STORY";
 
-const storiesReducer = (state, action) => {
+const storiesReducer = (state: StoriesState, action: StoriesAction) => {
   switch (action.type) {
     case STORIES_FETCH_INIT:
       return {
@@ -43,14 +89,16 @@ const storiesReducer = (state, action) => {
     case REMOVE_STORY:
       return {
         ...state,
-        data: state.data.filter((story) => action.payload !== story.objectID),
+        data: state.data.filter(
+          (story) => action.payload.objectID !== story.objectID
+        ),
       };
     default:
       throw new Error();
   }
 };
 
-function getSumComments(stories) {
+function getSumComments(stories: { data: Stories }) {
   console.log("getSumComments");
   return stories.data.reduce((acc, story) => acc + story.num_comments, 0);
 }
@@ -83,19 +131,19 @@ function App() {
     handleFetchStories();
   }, [handleFetchStories]);
 
-  const handleRemoveStory = (id) => {
+  const handleRemoveStory = (item: Story) => {
     dispatchStories({
       type: REMOVE_STORY,
-      payload: id,
+      payload: item,
     });
   };
 
-  const handleSearchSubmit = (event) => {
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
 
-  const handleSearchInput = (event) => {
+  const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
@@ -130,7 +178,13 @@ function App() {
   );
 }
 
-function Button({ type = "button", onClick, children, ...rest }) {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  type?: "button" | "submit" | "reset";
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  children: ReactNode;
+}
+
+function Button({ type = "button", onClick, children, ...rest }: ButtonProps) {
   return (
     <button type={type} onClick={onClick} {...rest}>
       {children}
@@ -138,7 +192,12 @@ function Button({ type = "button", onClick, children, ...rest }) {
   );
 }
 
-function List({ list, onRemoveItem }) {
+type ListProps = {
+  list: Stories;
+  onRemoveItem: (item: Story) => void;
+};
+
+function List({ list, onRemoveItem }: ListProps): JSX.Element {
   return (
     <ul>
       {list.map((item) => {
@@ -150,8 +209,14 @@ function List({ list, onRemoveItem }) {
   );
 }
 
-function Item({ objectID, item, onRemoveItem }) {
+type ItemProps = {
+  item: Story;
+  onRemoveItem: (item: Story) => void;
+};
+
+function Item({ item, onRemoveItem }: ItemProps): JSX.Element {
   const { url, title, author, num_comments, points } = item;
+
   return (
     <li className={styles.item}>
       <span style={{ width: "40%" }}>
@@ -164,7 +229,7 @@ function Item({ objectID, item, onRemoveItem }) {
         <button
           className={`${styles.button} ${styles.button_small}`}
           type="button"
-          onClick={onRemoveItem.bind(null, objectID)}
+          onClick={onRemoveItem.bind(null, item)}
         >
           <Check height="18px" width="18px" />
         </button>
@@ -173,6 +238,15 @@ function Item({ objectID, item, onRemoveItem }) {
   );
 }
 
+type InputWithLabelProps = {
+  id: string;
+  value: string;
+  type?: string;
+  onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isFocused?: boolean;
+  children: React.ReactNode;
+};
+
 function InputWithLabel({
   id,
   type = "text",
@@ -180,8 +254,8 @@ function InputWithLabel({
   onInputChange,
   children,
   isFocused,
-}) {
-  const inputRef = useRef();
+}: InputWithLabelProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isFocused && inputRef.current) {
@@ -206,7 +280,10 @@ function InputWithLabel({
   );
 }
 
-function useStorageState(key, initialState) {
+function useStorageState(
+  key: string,
+  initialState: string
+): [string, (newValue: string) => void] {
   const isMounted = useRef(false);
   const [value, setValue] = useState(localStorage.getItem(key) || initialState);
 
@@ -222,7 +299,16 @@ function useStorageState(key, initialState) {
   return [value, setValue];
 }
 
-function SearchForm({ searchTerm, onSearchInput, onSearchSubmit }) {
+type SearchFormProps = {
+  searchTerm: string;
+  onSearchInput: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearchSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+};
+function SearchForm({
+  searchTerm,
+  onSearchInput,
+  onSearchSubmit,
+}: SearchFormProps) {
   return (
     <form onSubmit={onSearchSubmit} className={styles["search-form"]}>
       <InputWithLabel
