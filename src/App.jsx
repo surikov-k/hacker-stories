@@ -2,6 +2,7 @@ import axios from "axios";
 import clsx from "clsx";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import styles from "./App.module.css";
+import Check from "./assets/check.svg?react";
 
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
@@ -148,7 +149,7 @@ function Item({ objectID, item, onRemoveItem }) {
           type="button"
           onClick={onRemoveItem.bind(null, objectID)}
         >
-          Dismiss
+          <Check height="18px" width="18px" />
         </button>
       </span>
     </li>
