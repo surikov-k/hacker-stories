@@ -1,6 +1,14 @@
 import axios from "axios";
 import clsx from "clsx";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import styles from "./App.module.css";
 import Check from "./assets/check.svg?react";
 
@@ -41,6 +49,11 @@ const storiesReducer = (state, action) => {
       throw new Error();
   }
 };
+
+function getSumComments(stories) {
+  console.log("getSumComments");
+  return stories.data.reduce((acc, story) => acc + story.num_comments, 0);
+}
 
 function App() {
   const [searchTerm, setSearchTerm] = useStorageState("search", "React");
@@ -86,9 +99,13 @@ function App() {
     setSearchTerm(event.target.value);
   };
 
+  const sumComments = useMemo(() => getSumComments(stories), [stories]);
+
   return (
     <div className={styles.container}>
-      <h1 className={styles["headline-primary"]}>My Hacker Stories</h1>
+      <h1 className={styles["headline-primary"]}>
+        My Hacker Stories with {sumComments} comments.
+      </h1>
 
       <SearchForm
         searchTerm={searchTerm}
@@ -190,8 +207,15 @@ function InputWithLabel({
 }
 
 function useStorageState(key, initialState) {
+  const isMounted = useRef(false);
   const [value, setValue] = useState(localStorage.getItem(key) || initialState);
+
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    console.log("A");
     localStorage.setItem(key, value);
   }, [value, key]);
 
