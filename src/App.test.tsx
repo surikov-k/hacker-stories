@@ -1,10 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { vi } from "vitest";
-import { as } from "vitest/dist/chunks/reporters.D7Jzd9GS";
-import App, { Item, SearchForm, storiesReducer } from "./App";
+import App, { SearchForm, storiesReducer } from "./App";
 import "@testing-library/jest-dom";
 import axios from "axios";
+import { Item } from "./List";
 
 const storyOne = {
   title: "React",
