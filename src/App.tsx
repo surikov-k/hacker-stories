@@ -2,9 +2,6 @@ import axios from "axios";
 import clsx from "clsx";
 import {
   ButtonHTMLAttributes,
-  FC,
-  memo,
-  ReactElement,
   ReactNode,
   useCallback,
   useEffect,
