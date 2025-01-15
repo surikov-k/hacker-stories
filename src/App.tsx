@@ -15,7 +15,7 @@ import styles from "./App.module.css";
 import Check from "./assets/check.svg?react";
 
 type Story = {
-  objectID: string;
+  objectID: number;
   url: string;
   title: string;
   author: string;
@@ -49,7 +49,7 @@ type StoriesRemoveAction = {
   payload: Story;
 };
 
-type StoriesAction =
+export type StoriesAction =
   | StoriesFetchInitAction
   | StoriesFetchSuccessAction
   | StoriesFetchFailureAction
@@ -96,8 +96,8 @@ const storiesReducer = (state: StoriesState, action: StoriesAction) => {
 };
 
 function getSumComments(stories: { data: Stories }) {
-  console.log("getSumComments");
-  return stories.data.reduce((acc, story) => acc + story.num_comments, 0);
+  console.log(stories);
+  return stories.data.reduce((acc, story) => acc + story.num_comments || 0, 0);
 }
 
 function App() {
@@ -224,6 +224,7 @@ function Item({ item, onRemoveItem }: ItemProps): JSX.Element {
       <span style={{ width: "10%" }}> {points}</span>
       <span style={{ width: "10%" }}>
         <button
+          data-testid="dismiss-button"
           className={`${styles.button} ${styles.button_small}`}
           type="button"
           onClick={onRemoveItem.bind(null, item)}
@@ -328,3 +329,4 @@ function SearchForm({
 }
 
 export default App;
+export { storiesReducer, SearchForm, InputWithLabel, List, Item };
