@@ -82,3 +82,15 @@
   fill: #ffffff;
   stroke: #ffffff;
 }
+
+.icon {
+  width: 16px;
+  height: 16px;
+  transform: rotate(0deg);
+  transition: transform 0.25s ease-in-out;
+}
+
+.icon-reverse {
+  transform: rotate(180deg);
+  transition: transform 0.25s ease-in-out;
+}

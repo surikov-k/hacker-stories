@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { ReactElement, useState } from "react";
 import { Stories, Story } from "./App";
 import styles from "./App.module.css";
 import Check from "./assets/check.svg?react";
+import DownArrow from "./assets/down-arrow.svg?react";
 import { sortBy } from "lodash";
 
 type ListProps = {
@@ -17,23 +18,50 @@ const Sorts = {
   POINT: (list: Stories) => sortBy(list, "points").reverse(),
 };
 
-export function List({ list, onRemoveItem }: ListProps): JSX.Element {
-  const [sort, setSort] = useState("NONE");
+type SortType = "TITLE" | "AUTHOR" | "COMMENT" | "POINT" | "NONE";
 
-  const handleSort = (sortKey: string) => {
-    setSort(sortKey);
+type SortState = {
+  type: SortType;
+  isReverse: boolean;
+};
+
+export function List({ list, onRemoveItem }: ListProps): ReactElement {
+  const [sort, setSort] = useState<SortState>({
+    type: "NONE",
+    isReverse: false,
+  });
+
+  const handleSort = (sortType: SortType) => {
+    const isReverse = sort.type === sortType && !sort.isReverse;
+    setSort({ type: sortType, isReverse });
   };
 
-  const sortFunction = Sorts[sort];
-  const sortedList = sortFunction(list);
+  const sortFunction = Sorts[sort.type];
+  const sortedList = sort.isReverse
+    ? sortFunction(list).reverse()
+    : sortFunction(list);
 
   return (
     <ul>
       <li style={{ display: "flex" }}>
-        <span style={{ width: "40%" }}>
+        <span
+          style={{
+            width: "40%",
+          }}
+        >
           {" "}
-          <button type="button" onClick={() => handleSort("TITLE")}>
+          <button
+            type="button"
+            onClick={() => handleSort("TITLE")}
+            style={{
+              padding: "4px 12px",
+              display: "flex",
+              gap: "15px",
+              alignItems: "center",
+            }}
+          >
             Title
+            <SortDirectionIndicator direction={sort.isReverse} />
           </button>
         </span>
         <span style={{ width: "30%" }}>
@@ -91,4 +119,13 @@ export function Item({ item, onRemoveItem }: ItemProps): JSX.Element {
       </span>
     </li>
   );
+}
+
+function SortDirectionIndicator({
+  direction = false,
+}: {
+  direction?: boolean;
+}) {
+  const iconClass = direction ? styles["icon-reverse"] : styles.icon;
+  return <DownArrow className={iconClass} width="16px" height="16px" />;
 }
