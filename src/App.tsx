@@ -14,6 +14,7 @@ import {
 import styles from "./App.module.css";
 
 import InputWithLabel from "./InputWithLabel";
+import LastSearch from "./LastSearch";
 import { List } from "./List";
 import SearchForm from "./SearchForm";
 
@@ -99,23 +100,52 @@ const storiesReducer = (state: StoriesState, action: StoriesAction) => {
 };
 
 function getSumComments(stories: { data: Stories }) {
-  console.log(stories);
   return stories.data.reduce((acc, story) => acc + story.num_comments || 0, 0);
+}
+
+function extractSearchTerm(url: string) {
+  return url.replace(API_ENDPOINT, "");
+}
+
+function getLastSearches(urls: string[]) {
+  return urls
+    .reduce((acc: string[], current: string) => {
+      if (acc.at(-1) !== current) {
+        acc.push(current);
+      }
+      console.log(current);
+      return acc;
+    }, [])
+    .slice(-6)
+    .slice(0, -1)
+    .map((url) => extractSearchTerm(url));
+}
+
+function getUrl(searchTerm: string) {
+  return `${API_ENDPOINT}${searchTerm}`;
 }
 
 function App() {
   const [searchTerm, setSearchTerm] = useStorageState("search", "React");
-  const [url, setUrl] = useState(`${API_ENDPOINT}${searchTerm}`);
+  const [urls, setUrls] = useState<string[]>([getUrl(searchTerm)]);
   const [stories, dispatchStories] = useReducer(storiesReducer, {
     data: [],
     isLoading: false,
     isError: false,
   });
 
+  const handleLastSearch = (searchTerm: string) => {
+    setSearchTerm(searchTerm);
+    handleSearch(searchTerm);
+  };
+
+  const lastSearches = getLastSearches(urls);
+
   const handleFetchStories = useCallback(async () => {
     dispatchStories({ type: STORIES_FETCH_INIT });
 
     try {
+      const url = urls[urls.length - 1];
       const result = await axios.get(url);
 
       dispatchStories({
@@ -125,7 +155,7 @@ function App() {
     } catch {
       dispatchStories({ type: STORIES_FETCH_FAILURE });
     }
-  }, [url]);
+  }, [urls]);
 
   useEffect(() => {
     handleFetchStories();
@@ -138,9 +168,14 @@ function App() {
     });
   };
 
+  const handleSearch = (searchTerm: string) => {
+    const url = getUrl(searchTerm);
+    setUrls(urls.concat(url));
+  };
+
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setUrl(`${API_ENDPOINT}${searchTerm}`);
+    handleSearch(searchTerm);
   };
 
   const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,6 +195,8 @@ function App() {
         onSearchInput={handleSearchInput}
         onSearchSubmit={handleSearchSubmit}
       />
+
+      <LastSearch lastSearches={lastSearches} onLastSearch={handleLastSearch} />
 
       {stories.isError && <p>Something went wrong</p>}
 
