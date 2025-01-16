@@ -1,5 +1,4 @@
 import axios from "axios";
-import clsx from "clsx";
 import {
   ButtonHTMLAttributes,
   ReactNode,
@@ -12,8 +11,6 @@ import {
 } from "react";
 
 import styles from "./App.module.css";
-
-import InputWithLabel from "./InputWithLabel";
 import LastSearch from "./LastSearch";
 import { List } from "./List";
 import SearchForm from "./SearchForm";
@@ -31,6 +28,7 @@ export type Stories = Story[];
 
 type StoriesState = {
   data: Stories;
+  page: number;
   isLoading: boolean;
   isError: boolean;
 };
@@ -41,7 +39,7 @@ type StoriesFetchInitAction = {
 
 type StoriesFetchSuccessAction = {
   type: "STORIES_FETCH_SUCCESS";
-  payload: Stories;
+  payload: { list: Stories; page: number };
 };
 
 type StoriesFetchFailureAction = {
@@ -60,6 +58,13 @@ export type StoriesAction =
   | StoriesRemoveAction;
 
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
+const API_BASE = "https://hn.algolia.com/api/v1";
+const API_SEARCH = "/search";
+const PARAM_SEARCH = "query=";
+const PARAM_PAGE = "page=";
+
+const getUrl = (searchTerm: string, page: number) =>
+  `${API_BASE}${API_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}`;
 
 const STORIES_FETCH_INIT = "STORIES_FETCH_INIT";
 const STORIES_FETCH_SUCCESS = "STORIES_FETCH_SUCCESS";
@@ -79,7 +84,11 @@ const storiesReducer = (state: StoriesState, action: StoriesAction) => {
         ...state,
         isLoading: false,
         isError: false,
-        data: action.payload,
+        data:
+          action.payload.page === 0
+            ? action.payload.list
+            : state.data.concat(action.payload.list),
+        page: action.payload.page,
       };
     case STORIES_FETCH_FAILURE:
       return {
@@ -103,8 +112,9 @@ function getSumComments(stories: { data: Stories }) {
   return stories.data.reduce((acc, story) => acc + story.num_comments || 0, 0);
 }
 
-function extractSearchTerm(url: string) {
-  return url.replace(API_ENDPOINT, "");
+function extractSearchTerm(urlString: string) {
+  const url = new URL(urlString);
+  return url.searchParams.get("query");
 }
 
 function getLastSearches(urls: string[]) {
@@ -121,22 +131,25 @@ function getLastSearches(urls: string[]) {
     .map((url) => extractSearchTerm(url));
 }
 
-function getUrl(searchTerm: string) {
-  return `${API_ENDPOINT}${searchTerm}`;
-}
-
 function App() {
   const [searchTerm, setSearchTerm] = useStorageState("search", "React");
-  const [urls, setUrls] = useState<string[]>([getUrl(searchTerm)]);
+  const [urls, setUrls] = useState<string[]>([getUrl(searchTerm, 0)]);
   const [stories, dispatchStories] = useReducer(storiesReducer, {
     data: [],
+    page: 0,
     isLoading: false,
     isError: false,
   });
 
   const handleLastSearch = (searchTerm: string) => {
     setSearchTerm(searchTerm);
-    handleSearch(searchTerm);
+    handleSearch(searchTerm, 0);
+  };
+
+  const handleMore = () => {
+    const lastUrl = urls.at(-1) || "";
+    const searchTerm = extractSearchTerm(lastUrl) || "";
+    handleSearch(searchTerm, stories.page + 1);
   };
 
   const lastSearches = getLastSearches(urls);
@@ -150,7 +163,10 @@ function App() {
 
       dispatchStories({
         type: STORIES_FETCH_SUCCESS,
-        payload: result.data.hits,
+        payload: {
+          list: result.data.hits,
+          page: result.data.page,
+        },
       });
     } catch {
       dispatchStories({ type: STORIES_FETCH_FAILURE });
@@ -168,14 +184,14 @@ function App() {
     });
   };
 
-  const handleSearch = (searchTerm: string) => {
-    const url = getUrl(searchTerm);
+  const handleSearch = (searchTerm: string, page: number) => {
+    const url = getUrl(searchTerm, page);
     setUrls(urls.concat(url));
   };
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    handleSearch(searchTerm);
+    handleSearch(searchTerm, 0);
   };
 
   const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,32 +216,15 @@ function App() {
 
       {stories.isError && <p>Something went wrong</p>}
 
+      <List list={stories.data} onRemoveItem={handleRemoveStory} />
       {stories.isLoading ? (
         <div>Loading...</div>
       ) : (
-        <List list={stories.data} onRemoveItem={handleRemoveStory} />
+        <button type="button" onClick={handleMore}>
+          More
+        </button>
       )}
-      <Button onClick={() => console.log("Clicked button One!")}>
-        Click Button One!
-      </Button>
-      <Button type="submit" onClick={() => console.log("Clicked button Two!")}>
-        Click Button Two!
-      </Button>
     </div>
-  );
-}
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  type?: "button" | "submit" | "reset";
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  children: ReactNode;
-}
-
-function Button({ type = "button", onClick, children, ...rest }: ButtonProps) {
-  return (
-    <button type={type} onClick={onClick} {...rest}>
-      {children}
-    </button>
   );
 }
 
